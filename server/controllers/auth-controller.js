@@ -1,32 +1,45 @@
-// *----------------------
-//* Controllers
-// *----------------------
-
-//? In an Express.js application, a "controller" refers to a part of your code that is responsible for handling the application's logic. Controllers are typically used to process incoming requests, interact with models (data sources), and send responses back to clients. They help organize your application by separating concerns and following the MVC (Model-View-Controller) design pattern.
+const User = require("../models/auth-model");
 
 // *-------------------
 // Home Logic
 // *-------------------
 const home = async (req, res) => {
-    try {
-      res.status(200).json({ msg: "Welcome to our home page" });
-    } catch (error) {
-      console.log(error);
+  try {
+    res.status(200).json({ msg: "Welcome to our home page" });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// *-------------------------------
+//* User Registration Logic 📝
+// *-------------------------------
+// 1. Get Registration Data: 📤 Retrieve user data (username, email, password).
+// 2. Check Email Existence: 📋 Check if the email is already registered.
+// 3. Hash Password: 🔒 Securely hash the password.
+// 4. Create User: 📝 Create a new user with hashed password.
+// 5. Save to DB: 💾 Save user data to the database.
+// 6. Respond: ✅ Respond with "Registration Successful" or handle errors.
+
+const register = async (req, res) => {
+  try {
+    // const data = req.body;
+    console.log(req.body);
+    const { username, email, phone, password } = req.body;
+
+    const userExist = await User.findOne({ email: email });
+
+    if (userExist) {
+      return res.status(400).json({ msg: "email already exists" });
     }
-  };
-  
-  // *-------------------
-  // Registration Logic
-  // *-------------------
-  const register = async (req, res) => {
-    try {
-      const data = req.body;
-      console.log(req.body);
-      // res.status(201).json({ message: "User registered successfully" });
-      res.status(200).json({ msg: data });
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
-    }
-  };
-  
-  module.exports = { home, register };
+
+    const userCreated = await User.create({ username, email, phone, password });
+
+    // res.status(201).json({ message: "User registered successfully" });
+    res.status(201).json({ msg: userCreated });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports = { home, register };
