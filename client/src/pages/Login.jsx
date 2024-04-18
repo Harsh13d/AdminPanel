@@ -19,7 +19,7 @@ export const Login = () => {
       [name]: value,
     });
   };
- //  Help me reach 1 Million subs 👉 https://youtube.com/thapatechnical
+
 
   return (
     <>
