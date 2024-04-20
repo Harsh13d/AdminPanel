@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth";
+import { toast } from "react-toastify";
 
 export const Login = () => {
   const [user, setUser] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
-  const { saveTokenInLocalStr } = useAuth();
-
   const navigate = useNavigate();
+  const { storeTokenInLS, API } = useAuth();
 
-  // let handle the input field value
+  const URL = `${API}/api/auth/login`;
+
   const handleInput = (e) => {
     let name = e.target.name;
     let value = e.target.value;
@@ -23,11 +24,10 @@ export const Login = () => {
     });
   };
 
-  // let handle the form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
+      const response = await fetch(URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,12 +35,22 @@ export const Login = () => {
         body: JSON.stringify(user),
       });
 
+      console.log("login form", response);
+
+      const res_data = await response.json();
+
       if (response.ok) {
-        const responseData = await response.json();
-        console.log("after login: ", responseData);
-        // toast.success("Registration Successful");
-        saveTokenInLocalStr(responseData.token);
+        // alert("Login Successful");
+        storeTokenInLS(res_data.token);
+
+        setUser({ email: "", password: "" });
+        toast.success("Login successful");
         navigate("/");
+      } else {
+        toast.error(
+          res_data.extraDetails ? res_data.extraDetails : res_data.message
+        );
+        console.log("invalid credential");
       }
     } catch (error) {
       console.log(error);
@@ -53,27 +63,32 @@ export const Login = () => {
         <main>
           <div className="section-registration">
             <div className="container grid grid-two-cols">
-              <div className="registration-image reg-img">
+              <div className="registration-image">
                 <img
-                  src="/images/register.png"
-                  alt="a nurse with a cute look"
-                  width="400"
+                  src="/images/login.png"
+                  alt=" let's fill the login form "
+                  width="500"
                   height="500"
                 />
               </div>
-              {/* our main registration code  */}
+
+              {/* let tackle registration form  */}
               <div className="registration-form">
-                <h1 className="main-heading mb-3">Login form</h1>
+                <h1 className="main-heading mb-3">login form</h1>
                 <br />
+
                 <form onSubmit={handleSubmit}>
                   <div>
                     <label htmlFor="email">email</label>
                     <input
-                      type="text"
+                      type="email"
                       name="email"
+                      placeholder="enter your email"
+                      id="email"
+                      required
+                      autoComplete="off"
                       value={user.email}
                       onChange={handleInput}
-                      placeholder="email"
                     />
                   </div>
 
@@ -82,14 +97,18 @@ export const Login = () => {
                     <input
                       type="password"
                       name="password"
+                      placeholder="password"
+                      id="password"
+                      required
+                      autoComplete="off"
                       value={user.password}
                       onChange={handleInput}
-                      placeholder="password"
                     />
                   </div>
+
                   <br />
                   <button type="submit" className="btn btn-submit">
-                    Login Now
+                    Register Now
                   </button>
                 </form>
               </div>

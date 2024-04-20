@@ -4,14 +4,22 @@ const bcrypt = require("bcryptjs");
 // *-------------------
 // Home Logic
 // *-------------------
+
 const home = async (req, res) => {
   try {
-    res.status(200).json({ msg: "Welcome to our home page" });
+    res
+      .status(200)
+      .send(
+        "Welcome to world best mern series by thapa technical using router "
+      );
   } catch (error) {
     console.log(error);
   }
 };
 
+// *-------------------
+// Registration Logic
+// *-------------------
 // *-------------------------------
 //* User Registration Logic 📝
 // *-------------------------------
@@ -24,28 +32,39 @@ const home = async (req, res) => {
 
 const register = async (req, res) => {
   try {
-    // const data = req.body;
     console.log(req.body);
     const { username, email, phone, password } = req.body;
 
-    const userExist = await User.findOne({ email: email });
+    const userExist = await User.findOne({ email });
 
     if (userExist) {
-      return res.status(400).json({ msg: "email already exists" });
+      return res.status(400).json({ message: "email already exists" });
     }
 
-    const userCreated = await User.create({ username, email, phone, password });
+    // hash the password
+    // const saltRound = 10;
+    // const hash_password = await bcrypt.hash(password, saltRound);
 
-    // res.status(201).json({ message: "User registered successfully" });
+    const userCreated = await User.create({
+      username,
+      email,
+      phone,
+      password,
+    });
+
     res.status(201).json({
-      msg: "Registration Successful",
+      msg: "registration successful",
       token: await userCreated.generateToken(),
       userId: userCreated._id.toString(),
     });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    // res.status(500).json("internal server error");
+    console.log(req.body);
+    next(error);
   }
 };
+
+// In most cases, converting _id to a string is a good practice because it ensures consistency and compatibility across different JWT libraries and systems. It also aligns with the expectation that claims in a JWT are represented as strings.
 
 // *-------------------------------
 //* User Login Logic 📝
@@ -56,41 +75,41 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     const userExist = await User.findOne({ email });
+    console.log(userExist);
 
     if (!userExist) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "Invalid Credentials " });
     }
 
     // const user = await bcrypt.compare(password, userExist.password);
-    const isPasswordValid = await userExist.comparePassword(password);
+    const user = await userExist.comparePassword(password);
 
-    if (isPasswordValid) {
+    if (user) {
       res.status(200).json({
-        message: "Login Successful",
+        msg: "Login Successful",
         token: await userExist.generateToken(),
         userId: userExist._id.toString(),
       });
     } else {
-      res.status(401).json({ message: "Invalid email or passord " });
+      res.status(401).json({ message: "Invalid email or password" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json("internal server error");
   }
 };
 
-// *-------------------
-// User Logic
-// *-------------------
+// *-------------------------------
+//* to send user data - User Logic 📝
+// *-------------------------------
 
 const user = async (req, res) => {
   try {
-    // const userData = await User.find({});
     const userData = req.user;
     console.log(userData);
-    return res.status(200).json({ msg: userData });
+    return res.status(200).json({ userData });
   } catch (error) {
-    console.log(` error from user route ${error}`);
+    console.log(`error from the user route ${error}`);
   }
 };
 
-module.exports = { home, register, login , user};
+module.exports = { home, register, login, user };
